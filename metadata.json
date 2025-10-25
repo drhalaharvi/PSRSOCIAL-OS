@@ -1,0 +1,7 @@
+{
+  "name": "Social Marketing Co-Pilot",
+  "description": "An AI-powered application to generate social media marketing insights, create actionable plans, edit images, and generate videos to boost your online presence.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
