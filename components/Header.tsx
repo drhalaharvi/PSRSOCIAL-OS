@@ -9,8 +9,10 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab }) => {
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'plan', label: 'Marketing Plan' },
+    { id: 'plan', label: 'Brand & Market Analysis' },
     { id: 'calendar', label: 'Content Calendar' },
+    { id: 'multi-post', label: 'Multi-Platform Post' },
+    { id: 'writer', label: 'Post Writer' },
     { id: 'generate', label: 'Image Generation' },
     { id: 'image', label: 'Image Editor' },
     { id: 'upscale', label: 'Image Upscaler' },

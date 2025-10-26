@@ -68,7 +68,12 @@ const BrandMarketAnalysis: React.FC<BrandMarketAnalysisProps> = ({ onAddTask }) 
                             <div>
                                 <h5 className="text-gray-300 font-semibold">Platform Strategies</h5>
                                 {comp.platformStrategies.map((ps, i) => (
-                                   <p key={i} className="text-gray-400 mt-1"><strong className="text-gray-300">{ps.platform}:</strong> {ps.strategy}</p>
+                                   <div key={i} className="mt-2 pl-2 border-l-2 border-gray-700">
+                                       <p className="text-gray-400"><strong className="text-gray-300">{ps.platform}:</strong> {ps.strategy}</p>
+                                       {ps.postingFrequency && (
+                                           <p className="text-gray-400 text-sm mt-1"><strong className="text-gray-300">Approx. posting frequency:</strong> {ps.postingFrequency}</p>
+                                       )}
+                                   </div>
                                 ))}
                             </div>
                         </div>

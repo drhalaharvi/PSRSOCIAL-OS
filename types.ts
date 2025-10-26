@@ -1,6 +1,9 @@
+
 import type { GroundingChunk } from '@google/genai';
 
-export type Tab = 'plan' | 'calendar' | 'image' | 'generate' | 'video' | 'local' | 'upscale';
+export type Tab = 'plan' | 'calendar' | 'multi-post' | 'writer' | 'image' | 'generate' | 'video' | 'local' | 'upscale';
+
+export type Platform = 'Facebook' | 'Instagram' | 'LinkedIn' | 'Google Business Profile';
 
 export interface PostIdea {
   platform: 'Instagram' | 'TikTok' | 'X' | 'Facebook' | 'LinkedIn';
@@ -8,17 +11,29 @@ export interface PostIdea {
   visualIdea: string;
 }
 
-export interface MarketingPlanResponse {
-  competitorAnalysis: {
+export interface CompetitorStrategy {
     competitorName: string;
-    strengths: string[];
-    weaknesses: string[];
-  }[];
-  contentPillars: {
-    pillar: string;
-    description: string;
-  }[];
-  postIdeas: PostIdea[];
+    contentThemes: string[];
+    commonPostTypes: string[];
+    platformStrategies: {
+        platform: string;
+        strategy: string;
+        postingFrequency?: string;
+    }[];
+}
+
+export interface MarketingPlanResponse {
+    brandSummary: {
+        mission: string;
+        targetAudience: string;
+        toneOfVoice: string;
+    };
+    competitorStrategies: CompetitorStrategy[];
+    trendingTopics: {
+        topic: string;
+        relevance: string;
+    }[];
+    postIdeas: PostIdea[];
 }
 
 export interface Task {
@@ -27,7 +42,15 @@ export interface Task {
   completed: boolean;
 }
 
+export interface PostingRecommendation {
+    platform: Platform;
+    optimalTime: string;
+    formatSuggestion: string;
+}
+
 export type AspectRatio = '16:9' | '9:16' | '1:1';
+
+export type ImageFilter = 'none' | 'grayscale' | 'sepia' | 'invert' | 'vintage';
 
 export interface GroundingSource {
     title: string;

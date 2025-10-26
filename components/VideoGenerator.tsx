@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { generateVideo } from '../services/geminiService';
-import { fileToBase64, fileToDataUrl } from '../utils/fileUtils';
+import { fileToBase64, fileToDataUrl, getMimeType } from '../utils/fileUtils';
 import type { AspectRatio } from '../types';
 import Spinner from './ui/Spinner';
 import Card from './ui/Card';
@@ -16,6 +16,11 @@ const loadingMessages = [
     "This can take a few minutes, hang tight...",
     "Almost there..."
 ];
+
+const supportedMimeTypes = ['image/png', 'image/jpeg'];
+const supportedMimeTypesString = supportedMimeTypes.join(',');
+const MAX_FILE_SIZE_MB = 16;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 const VideoGenerator: React.FC = () => {
     const [apiKeySelected, setApiKeySelected] = useState(false);
@@ -88,6 +93,7 @@ const VideoGenerator: React.FC = () => {
         if (file) {
             setImageFile(file);
             setGeneratedVideoUrl(null);
+            setError(null); // Clear previous errors
             try {
                 const dataUrl = await fileToDataUrl(file);
                 setPreviewUrl(dataUrl);
@@ -103,6 +109,18 @@ const VideoGenerator: React.FC = () => {
             setError('Please upload an image and provide a video prompt.');
             return;
         }
+
+        if (imageFile.size > MAX_FILE_SIZE_BYTES) {
+            setError(`Image size exceeds the ${MAX_FILE_SIZE_MB} MB limit for video generation.`);
+            return;
+        }
+
+        const mimeType = getMimeType(imageFile);
+        if (!supportedMimeTypes.includes(mimeType)) {
+             setError(`Unsupported image type. Please use one of the following: ${supportedMimeTypes.map(t => t.split('/')[1]).join(', ')}.`);
+            return;
+        }
+
         setLoading(true);
         setError(null);
         setGeneratedVideoUrl(null);
@@ -110,7 +128,7 @@ const VideoGenerator: React.FC = () => {
 
         try {
             const base64Image = await fileToBase64(imageFile);
-            const videoUrl = await generateVideo(base64Image, imageFile.type, prompt, aspectRatio);
+            const videoUrl = await generateVideo(base64Image, mimeType, prompt, aspectRatio);
             setGeneratedVideoUrl(videoUrl);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
@@ -152,7 +170,13 @@ const VideoGenerator: React.FC = () => {
                 <h2 className="text-2xl font-bold text-indigo-400 mb-4">AI Video Generator</h2>
                 <p className="text-gray-400 mb-6">Bring your images to life! Upload a starting image, describe a scene, and our AI will generate a short video.</p>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <FileInput label="Upload Starting Image" onChange={handleFileChange} accept="image/*" />
+                    <FileInput 
+                        id="video-file-upload" 
+                        label="Upload Starting Image" 
+                        onChange={handleFileChange} 
+                        accept={supportedMimeTypesString}
+                        description={`Supported formats: JPG, PNG. Max size: ${MAX_FILE_SIZE_MB} MB.`}
+                    />
                     <div>
                         <label htmlFor="prompt" className="block text-sm font-medium text-gray-300 mb-2">Video Prompt</label>
                         <input

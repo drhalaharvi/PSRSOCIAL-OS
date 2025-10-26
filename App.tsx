@@ -2,13 +2,15 @@
 import React, { useState, useCallback } from 'react';
 import type { Tab, Task, PostIdea } from './types';
 import Header from './components/Header';
-import MarketingPlan from './components/MarketingPlan';
+import BrandMarketAnalysis from './components/BrandMarketAnalysis';
 import ImageEditor from './components/ImageEditor';
 import ImageGenerator from './components/ImageGenerator';
 import ImageUpscaler from './components/ImageUpscaler';
 import VideoGenerator from './components/VideoGenerator';
 import LocalInsights from './components/LocalInsights';
 import ContentCalendar from './components/ContentCalendar';
+import MultiPostManager from './components/MultiPostManager';
+import PostWriter from './components/PostWriter';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('plan');
@@ -44,9 +46,13 @@ const App: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'plan':
-        return <MarketingPlan tasks={tasks} onAddTask={addTask} />;
+        return <BrandMarketAnalysis onAddTask={addTask} />;
       case 'calendar':
         return <ContentCalendar tasks={tasks} onToggleTask={toggleTask} />;
+      case 'multi-post':
+        return <MultiPostManager />;
+      case 'writer':
+        return <PostWriter />;
       case 'generate':
         return <ImageGenerator />;
       case 'image':
@@ -58,7 +64,7 @@ const App: React.FC = () => {
       case 'local':
         return <LocalInsights />;
       default:
-        return <MarketingPlan tasks={tasks} onAddTask={addTask} />;
+        return <BrandMarketAnalysis onAddTask={addTask} />;
     }
   };
 

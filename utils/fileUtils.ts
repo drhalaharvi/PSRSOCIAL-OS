@@ -21,3 +21,25 @@ export const fileToDataUrl = (file: File): Promise<string> => {
         reader.onerror = error => reject(error);
     });
 };
+
+export const getMimeType = (file: File): string => {
+  if (file.type) {
+    return file.type;
+  }
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  switch (extension) {
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'png':
+      return 'image/png';
+    case 'webp':
+      return 'image/webp';
+    case 'gif':
+      return 'image/gif';
+    // The Gemini API supports a limited set of image MIME types.
+    // Defaulting to jpeg is a reasonable fallback for common image types.
+    default:
+      return 'image/jpeg';
+  }
+};

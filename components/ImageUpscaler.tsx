@@ -1,12 +1,16 @@
-
 import React, { useState, useCallback } from 'react';
 import { editImage } from '../services/geminiService';
-import { fileToBase64, fileToDataUrl } from '../utils/fileUtils';
+import { fileToBase64, fileToDataUrl, getMimeType } from '../utils/fileUtils';
 import Spinner from './ui/Spinner';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import FileInput from './ui/FileInput';
 import DownloadButton from './ui/DownloadButton';
+
+const supportedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+const supportedMimeTypesString = supportedMimeTypes.join(',');
+const MAX_FILE_SIZE_MB = 4;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 const ImageUpscaler: React.FC = () => {
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -20,6 +24,7 @@ const ImageUpscaler: React.FC = () => {
         if (file) {
             setImageFile(file);
             setUpscaledImageUrl(null);
+            setError(null); // Clear previous errors
             try {
                 const dataUrl = await fileToDataUrl(file);
                 setOriginalImageUrl(dataUrl);
@@ -36,14 +41,26 @@ const ImageUpscaler: React.FC = () => {
             setError('Please upload an image to upscale.');
             return;
         }
+
+        if (imageFile.size > MAX_FILE_SIZE_BYTES) {
+            setError(`Image size exceeds the ${MAX_FILE_SIZE_MB} MB limit.`);
+            return;
+        }
+
+        const mimeType = getMimeType(imageFile);
+        if (!supportedMimeTypes.includes(mimeType)) {
+            setError(`Unsupported image type. Please use one of the following: ${supportedMimeTypes.map(t => t.split('/')[1]).join(', ')}.`);
+            return;
+        }
+
         setLoading(true);
         setError(null);
         setUpscaledImageUrl(null);
         try {
             const base64Image = await fileToBase64(imageFile);
             const upscalePrompt = "Upscale this image, significantly enhancing its resolution, detail, and clarity. Make it look like a high-resolution photograph. Do not add any new elements or change the subject matter.";
-            const upscaledBase64 = await editImage(base64Image, imageFile.type, upscalePrompt);
-            setUpscaledImageUrl(`data:${imageFile.type};base64,${upscaledBase64}`);
+            const upscaledBase64 = await editImage(base64Image, mimeType, upscalePrompt);
+            setUpscaledImageUrl(`data:${mimeType};base64,${upscaledBase64}`);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to upscale image.');
             console.error(err);
@@ -58,7 +75,13 @@ const ImageUpscaler: React.FC = () => {
                 <h2 className="text-2xl font-bold text-indigo-400 mb-4">AI Image Upscaler</h2>
                 <p className="text-gray-400 mb-6">Upload a low-resolution image and our AI will enhance its quality and detail, making it sharp and clear.</p>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <FileInput label="Upload Image to Upscale" onChange={handleFileChange} accept="image/*" />
+                    <FileInput 
+                        id="upscaler-file-upload" 
+                        label="Upload Image to Upscale" 
+                        onChange={handleFileChange} 
+                        accept={supportedMimeTypesString}
+                        description={`Supported formats: JPG, PNG, WEBP. Max size: ${MAX_FILE_SIZE_MB} MB.`}
+                    />
                     <Button type="submit" disabled={loading || !imageFile} className="w-full md:w-auto">
                         {loading ? <><Spinner /> Upscaling...</> : 'Upscale Image'}
                     </Button>
